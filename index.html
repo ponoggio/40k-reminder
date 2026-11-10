@@ -96,6 +96,11 @@ input,select,textarea{width:100%;font:inherit;padding:9px;border-radius:8px;bord
 .ws b.sm{font-size:15px;line-height:1.45}
 .kw{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
 .kw span{font-size:13px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--sf2);color:var(--tx)}
+.gl{text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.kw .kc{font:600 13px Barlow,system-ui,sans-serif;padding:1px 8px;border-radius:999px;background:var(--sf2);color:var(--tx);border:0;text-decoration:underline dotted;text-underline-offset:3px}
+#dg{padding:0}.dgi{padding:16px}
+#dg h3{margin:0 0 4px;font:700 24px 'Barlow Condensed',sans-serif}
+#dg .txt{font-size:16px;max-height:55vh;overflow-y:auto}
 .pl{min-width:0}
 @media (min-width:700px){
 main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
@@ -119,6 +124,7 @@ main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
 </header>
 <main id="main"></main>
 <div class="fab"><button class="btn" id="add">+ Eigene</button><button class="btn p" id="nx"></button></div>
+<dialog id="dg"><div class="dgi"><h3 id="dgt"></h3><div class="hint" id="dgp"></div><div class="txt" id="dgd"></div></div></dialog>
 <dialog id="dd"><h3 style="margin:0 0 8px;font:700 22px 'Barlow Condensed',sans-serif">Regeldaten</h3>
  <p id="dinfo" class="hint"></p>
  <label class="btn" for="imp2" style="display:block;text-align:center;margin:0">Datei importieren</label><input type="file" id="imp2" accept=".json,application/json" hidden>
@@ -134,9 +140,9 @@ main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
  <div class="row"><button class="btn" value="x">Abbrechen</button><button class="btn p" id="fs" value="ok">Speichern</button></div>
 </form></dialog>
 <script>
-const EMBED=false;let ITEMS=[],UNITS=[];
+const EMBED=false;let ITEMS=[],UNITS=[],GLOSS={};
 const DKEY='ork40k-data-v1';
-(function(){try{const r=localStorage.getItem(DKEY);if(r){const d=JSON.parse(r);if(Array.isArray(d.ITEMS)&&Array.isArray(d.UNITS)){ITEMS=d.ITEMS;UNITS=d.UNITS}}}catch(e){}})();
+(function(){try{const r=localStorage.getItem(DKEY);if(r){const d=JSON.parse(r);if(Array.isArray(d.ITEMS)&&Array.isArray(d.UNITS)){ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{}}}}catch(e){}})();
 const PH=[["round","Rundenbeginn"],["command","Command"],["movement","Movement"],["shooting","Shooting"],["charge","Charge"],["fight","Fight"],["passive","Passiv"]];
 const KEY="ork40k-v1";
 let S={view:"detail",uo:null,round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};
@@ -144,7 +150,22 @@ try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catc
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const $=id=>document.getElementById(id);
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const fmt=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>").replace(/&lt;ins&gt;(.+?)&lt;\/ins&gt;/g,"$1").replace(/\n/g,"<br>");
+let GN=null;
+const q=s=>String(s).replace(/"/g,"&quot;");
+function gkey(x){
+  if(!GLOSS||!x)return null;if(!GN)GN=Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+  const s=String(x).replace(/[\[\]*]/g,"").trim().toLowerCase().split(":")[0].trim();
+  for(const n of GN){if(s===n||(s.startsWith(n)&&/^[\s\-\d+"x]/.test(s.slice(n.length))))return n}
+  return null}
+const gt=n=>gkey(n)?`<span class="gl" data-g="${q(esc(n))}">${esc(n)}</span>`:esc(n);
+const fmt=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>").replace(/&lt;ins&gt;(.+?)&lt;\/ins&gt;/g,"$1").replace(/\n/g,"<br>").replace(/<(b|i)>(.*?)<\/\1>/g,(m,tg,inn)=>{const pl=inn.replace(/<[^>]+>/g,"");return gkey(pl)?`<${tg}><span class="gl" data-g="${q(pl)}">${inn}</span></${tg}>`:m});
+function showGloss(term){
+  const k=gkey(term);if(!k)return;const e=GLOSS[k];
+  $("dgt").textContent=e.n;
+  const clean=String(term).replace(/[\[\]*]/g,"").trim();
+  $("dgp").textContent=(clean.toLowerCase()!==e.n.toLowerCase()?"Hier: "+clean+" · ":"")+(e.p?"Regelbuch S. "+e.p:"Regelbuch");
+  $("dgd").innerHTML=fmt(e.d).replace(/\*/g,"");
+  $("dg").showModal()}
 const all=()=>ITEMS.concat(S.custom);
 function phOf(i){const p=i.phases;return p&&p.length?p:["passive"]}
 function inPhase(i,ph){
@@ -160,7 +181,7 @@ function card(i,pas){
   const rl=S.riled&&i.riled?" riled":"";
   const once=i.once==="battle"?"einmal pro Spiel":i.once==="round"?"einmal pro Runde":i.once==="phase"?"einmal pro Phase":"";
   const kd=`<span class="kind${s?" s":""}">${s?"Stratagem"+(i.cp!==""&&i.cp!=null?" · "+i.cp+" CP":""):"Ability"}</span>`;
-  return `<article class="card${s?" s":""}${d?" done":""}${rl}${pas?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body"><h3>${esc(i.name)}</h3><div class="meta">${kd}${esc(i.unit)}${s&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once?` · <em>${once}</em>`:""}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div>${i.text?`<div class="txt${ex?"":" cl"}" data-a="o">${fmt(i.text)}</div>${!ex&&i.text.length>150?`<div class="more" data-a="o">mehr</div>`:""}`:""}</div></article>`}
+  return `<article class="card${s?" s":""}${d?" done":""}${rl}${pas?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body"><h3>${gt(i.name)}</h3><div class="meta">${kd}${esc(i.unit)}${s&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once?` · <em>${once}</em>`:""}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div>${i.text?`<div class="txt${ex?"":" cl"}" data-a="o">${fmt(i.text)}</div>${!ex&&i.text.length>150?`<div class="more" data-a="o">mehr</div>`:""}`:""}</div></article>`}
 const PL=Object.fromEntries(PH);
 function turnTxt(i){const o=(i.oppMap&&S.phase in i.oppMap)?i.oppMap[S.phase]:i.opp;return o===true?"Gegnerzug":o==="both"?"beide Züge":"Mein Zug"}
 function phTxt(i){const p=phOf(i);if(p[0]==="passive")return "Passiv";return p.map(x=>PL[x]).join("/")+(i.opp===true?" · Gegnerzug":(i.opp==="both"||i.oppMap)?" · auch Gegnerzug":"")}
@@ -171,14 +192,14 @@ function cardC(i,pas,inUnit){
   const kd=`<span class="kind${s?" s":""}">${s?"Stratagem"+(i.cp!==""&&i.cp!=null?" · "+i.cp+" CP":""):"Ability"}</span>`;
   const once=i.once==="battle"?" · <em>1×/Spiel</em>":i.once==="round"?" · <em>1×/Runde</em>":"";
   const sh=i.short||(i.text||"").replace(/\*/g,"").slice(0,70);
-  return `<article class="card cm${s?" s":""}${d?" done":""}${rl}${now}${pv?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body" data-a="o"><h3>${esc(i.name)}</h3><div class="meta">${kd}${inUnit?esc(phTxt(i)):esc(i.unit)}${s&&!inUnit&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div><div class="sh">${esc(sh)}</div>${ex&&i.text?`<div class="txt">${fmt(i.text)}</div>`:""}</div></article>`}
+  return `<article class="card cm${s?" s":""}${d?" done":""}${rl}${now}${pv?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body" data-a="o"><h3>${gt(i.name)}</h3><div class="meta">${kd}${inUnit?esc(phTxt(i)):esc(i.unit)}${s&&!inUnit&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div><div class="sh">${esc(sh)}</div>${ex&&i.text?`<div class="txt">${fmt(i.text)}</div>`:""}</div></article>`}
 function isWide(){return window.innerWidth>=700}
 function cd(i,pas){return (S.view==="compact"||(S.view==="units"&&isWide()))?cardC(i,pas,false):card(i,pas)}
 function wParse(w){const m=w.name.match(/^(?:➤\s*)?(.*?)\s*-\s+(.+)$/);return m?{base:m[1].trim(),mode:m[2].trim()}:{base:w.name.replace(/^➤\s*/,""),mode:""}}
 function wStats(w){
   const c=[["Range",w.t==="M"?"Melee":w.range],["A",w.A],[w.t==="R"?"BS":"WS",w.sk],["S",w.S],["AP",w.AP],["D",w.D]];
   return `<div class="ws">`+c.map(([l,v],n)=>`<div><span>${l}</span><b${n===0&&w.t==="M"?' class="sm"':""}>${esc(v||"–")}</b></div>`).join("")+`</div>`}
-function wKw(w){const k=(w.kw||"").split(",").map(x=>x.trim()).filter(Boolean);return k.length?`<div class="kw">${k.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}
+function wKw(w){const k=(w.kw||"").split(",").map(x=>x.trim()).filter(Boolean);return k.length?`<div class="kw">${k.map(x=>gkey(x)?`<button class="kc" data-g="${q(esc(x))}">${esc(x)}</button>`:`<span>${esc(x)}</span>`).join("")}</div>`:""}
 function weaponsHtml(u){
   let h="";
   [["R","Fernkampf","rg"],["M","Nahkampf","ml"]].forEach(([ty,lab,cl])=>{
@@ -249,7 +270,9 @@ function next(){
   window.scrollTo(0,0);render();
 }
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-u],[data-p],[data-a],button");if(!t)return;
+  if(e.target===$("dg")){$("dg").close();return}
+  const t=e.target.closest("[data-g],[data-u],[data-p],[data-a],button");if(!t)return;
+  if(t.dataset.g!==undefined){showGloss(t.dataset.g);return}
   if(t.dataset.u){S.uo=S.uo===t.dataset.u?null:t.dataset.u;render();return}
   if(t.dataset.p){S.phase=t.dataset.p;if(S.phase==="round"||S.phase==="passive"){}render();return}
   const c=t.closest(".card"),id=c&&c.dataset.id;
@@ -289,15 +312,15 @@ function importFile(f){
   if(!f)return;const r=new FileReader();
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.ITEMS)||!Array.isArray(d.UNITS)||!d.ITEMS.length)throw new Error("Unbekanntes Format");
     try{localStorage.setItem(DKEY,JSON.stringify(d))}catch(e){throw new Error("Speichern nicht möglich")}
-    ITEMS=d.ITEMS;UNITS=d.UNITS;render();dinfo();}catch(e){alert("Import fehlgeschlagen: "+e.message)}};
+    ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};GN=null;render();dinfo();}catch(e){alert("Import fehlgeschlagen: "+e.message)}};
   r.onerror=()=>alert("Datei konnte nicht gelesen werden");r.readAsText(f)}
-function dinfo(){$("dinfo").textContent=ITEMS.length?`Geladen: ${ITEMS.length} Regeln, ${UNITS.length} Einheitengruppen.`:"Keine Daten geladen."}
+function dinfo(){$("dinfo").textContent=ITEMS.length?`Geladen: ${ITEMS.length} Regeln, ${UNITS.length} Einheitengruppen, ${Object.keys(GLOSS).length} Glossar-Einträge.`:"Keine Daten geladen."}
 document.addEventListener("change",e=>{const x=e.target;if(x&&(x.id==="imp"||x.id==="imp2")){importFile(x.files&&x.files[0]);try{x.value=""}catch(_){}}});
 $("gear").hidden=EMBED;
 $("gear").onclick=()=>{dinfo();$("dd").showModal()};
 $("dcl").onclick=()=>$("dd").close();
 $("dres").onclick=()=>{if(confirm("Runde, CP, Haken und eigene Einträge zurücksetzen?")){S={view:S.view,uo:null,round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};$("dd").close();render()}};
-$("ddel").onclick=()=>{if(confirm("Regeldaten von diesem Gerät löschen?")){try{localStorage.removeItem(DKEY)}catch(e){}ITEMS=[];UNITS=[];$("dd").close();render()}};
+$("ddel").onclick=()=>{if(confirm("Regeldaten von diesem Gerät löschen?")){try{localStorage.removeItem(DKEY)}catch(e){}ITEMS=[];UNITS=[];GLOSS={};GN=null;$("dd").close();render()}};
 let rz;if(window.addEventListener)window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(render,120)});
 render();
 </script>
