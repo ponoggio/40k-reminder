@@ -114,6 +114,10 @@ input,select,textarea{width:100%;font:inherit;padding:9px;border-radius:8px;bord
 .mr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 0;border-top:1px solid var(--ln)}
 .mw{grid-column:1/-1;font-size:12.5px;color:var(--mu)}
 .mt{font-size:15px}.mv{font:700 21px 'Barlow Condensed',sans-serif;color:var(--mi);align-self:center}
+.key{border-left:4px solid var(--mi);background:var(--sf2);padding:8px 10px;border-radius:8px;font-weight:600;margin:12px 0 4px}
+.tp{margin:12px 0 4px;border-top:1px solid var(--ln);padding-top:8px}
+.tp summary{font:700 17px 'Barlow Condensed',sans-serif;color:var(--mi);cursor:pointer;padding:4px 0}
+.tp ul{margin:4px 0 0 18px;padding:0}.tp li{margin:6px 0;font-size:15px}
 .pl{min-width:0}
 @media (min-width:700px){
 main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
@@ -155,9 +159,9 @@ main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
  <div class="row"><button class="btn" value="x">Abbrechen</button><button class="btn p" id="fs" value="ok">Speichern</button></div>
 </form></dialog>
 <script>
-const EMBED=false;let ITEMS=[],UNITS=[],GLOSS={},MISS={};
+const EMBED=false;let ITEMS=[],UNITS=[],GLOSS={},MISS={},TIPS={};
 const DKEY='ork40k-data-v1';
-(function(){try{const r=localStorage.getItem(DKEY);if(r){const d=JSON.parse(r);if(Array.isArray(d.ITEMS)&&Array.isArray(d.UNITS)){ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};MISS=d.MISS||{}}}}catch(e){}})();
+(function(){try{const r=localStorage.getItem(DKEY);if(r){const d=JSON.parse(r);if(Array.isArray(d.ITEMS)&&Array.isArray(d.UNITS)){ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};MISS=d.MISS||{};TIPS=d.TIPS||{}}}}catch(e){}})();
 const PH=[["round","Rundenbeginn"],["command","Command"],["movement","Movement"],["shooting","Shooting"],["charge","Charge"],["fight","Fight"],["end","Zugende"],["passive","Passiv"]];
 const KEY="ork40k-v1";
 let S={view:"detail",uo:null,dispMe:"purge",dispOpp:"",mview:"me",round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};
@@ -220,34 +224,39 @@ function buildMission(k){
   m.rows.forEach(r=>{const a=r.r[0],b=r.r[1];
     if(r.w==="e")add(r,"end",r.r,false);
     else if(r.w==="c")add(r,"command",r.r,false);
-    else if(r.w==="c5"){const hi=Math.min(b,4);if(a<=hi)add(r,"command",[a,hi],false);if(b>=5)add(r,"end",[5,5],false," (Zugende, Runde 5)")}
-    else if(r.w==="eb")add(r,"end",[5,5],"both"," (Ende der Schlacht)");
+    else if(r.w==="c5"){const hi=Math.min(b,4);if(a<=hi)add(r,"command",[a,hi],false);if(b>=5)add(r,"end",[5,5],false," (end of turn, R5)")}
+    else if(r.w==="eb")add(r,"end",[5,5],"both"," (end of the battle)");
     else if(r.w==="ea")add(r,"end",r.r,"both");
-    else if(r.w==="ts")add(r,"command",r.r,false," (Zugbeginn)");
+    else if(r.w==="ts")add(r,"command",r.r,false," (start of turn)");
     else if(r.w==="sb")add(r,"round",r.r,false);
     else if(r.w==="m")add(r,"movement",r.r,false)});
-  if(m.act)add({t:"Aktion: "+m.act.n,x:m.act.x,vp:"",f:"act",s:m.act.s},"shooting",m.act.r,false);
+  if(m.act)add({t:"Action: "+m.act.n,x:m.act.x,vp:"",f:"act",s:m.act.s},"shooting",m.act.r,false);
+  const tp=typeof TIPS!=="undefined"&&TIPS[k];
+  if(tp)out.push({id:"mt",name:"Matchup tip",unit:"Mission: "+m.n,text:tp.k+"\n\nYour plan:\n"+tp.p.map(x=>"• "+x).join("\n")+"\n\nWatch for:\n"+tp.w.map(x=>"• "+x).join("\n"),short:tp.k,kind:"mission",vp:"",f:"tip",phases:["round"],opp:false,once:"p",r:[1,5],riled:false});
   return out}
 function kindChip(i){
   if(i.kind==="stratagem")return `<span class="kind s">Stratagem${i.cp!==""&&i.cp!=null?" · "+i.cp+" CP":""}</span>`;
-  if(i.kind==="mission"){if(i.f==="act")return `<span class="kind m">Mission · Aktion</span>`;const v=String(i.vp||"");return `<span class="kind m">Mission${v?" · "+(v[0]==="+"?v+" VP zusätzlich":v+" VP"):""}${i.f==="or"?" · oder":""}</span>`}
+  if(i.kind==="mission"){if(i.f==="act")return `<span class="kind m">Mission · Action</span>`;if(i.f==="tip")return `<span class="kind m">Mission · Tip</span>`;const v=String(i.vp||"");return `<span class="kind m">Mission${v?" · "+v+"VP"+(v[0]==="+"?" cumulative":""):" · Rule"}${i.f==="or"?" · or":""}</span>`}
   return `<span class="kind">Ability</span>`}
 function kc(i){return i.kind==="stratagem"?" s":i.kind==="mission"?" mi":""}
-const RL=r=>r[0]===1&&r[1]===5?"Jede Runde":r[0]===r[1]?"Runde "+r[0]:r[1]===5?"ab Runde "+r[0]:"Runde "+r[0]+"–"+r[1];
-const WL={m:"Wenn deine Einheit eine Bewegung beendet",e:"Ende deines Zuges",c:"Ende deiner Command phase",c5:"Ende deiner Command phase (Runde 5: Zugende)",eb:"Ende der Schlacht",ea:"Ende eines Zuges",ts:"Beginn deines Zuges",sb:"Beginn der Schlacht"};
+const RLN={"1-5":"Any battle round","1-1":"First battle round","1-2":"First and second battle round","2-5":"Second battle round onwards","2-4":"Second to fourth battle round","2-3":"Second and third battle round","4-5":"Fourth battle round onwards","5-5":"Fifth battle round"};
+const RL=r=>RLN[r[0]+"-"+r[1]]||("Rounds "+r[0]+"–"+r[1]);
+const WL={m:"Each time a friendly unit ends a move",e:"End of your turn",c:"End of your Command phase",c5:"End of your Command phase (or the end of your turn in the fifth battle round)",eb:"End of the battle",ea:"End of a turn",ts:"Start of your turn",sb:"Start of the battle"};
 function mCard(key){
   if(!S.dispOpp)return `<p class="hint">Wähle die Disposition deines Gegners.</p>`;
   const m=MISS[key];
   if(!m)return `<p class="hint">Für diese Paarung ist keine Mission hinterlegt.</p>`;
-  const rows=m.rows.map(r=>{const v=String(r.vp||"");return `<div class="mr"><div class="mw">${RL(r.r)} · ${WL[r.w]}</div><div class="mt">${r.f==="or"?"<b>ODER</b> ":""}${r.f==="plus"?"<b>+</b> ":""}${esc(r.x)}</div>${v?`<div class="mv">${esc(v)} VP</div>`:""}</div>`}).join("");
-  const a=m.act?`<div class="sub">Aktion: ${esc(m.act.n)}</div><div class="mt">${esc(m.act.x).replace(/\n/g,"<br>")}</div>`+(m.act.r[0]>1?`<p class="hint">Möglich ab Runde ${m.act.r[0]}.</p>`:""):"";
+  const rows=m.rows.map(r=>{const v=String(r.vp||"");return `<div class="mr"><div class="mw">${RL(r.r)} · ${WL[r.w]}</div><div class="mt">${r.f==="or"?"<b>OR</b> ":""}${r.f==="plus"?"<b>+</b> ":""}${esc(r.x)}</div>${v?`<div class="mv">${esc(v)}VP${r.f==="plus"?" <small>cumulative</small>":""}</div>`:""}</div>`}).join("");
+  const a=m.act?`<div class="sub">Action: ${esc(m.act.n)}</div><div class="mt">${esc(m.act.x).replace(/\n/g,"<br>")}</div>`+(m.act.r[0]>1?`<p class="hint">Available from the second battle round.</p>`:""):"";
   return `<h3>${esc(m.n)}</h3>`+rows+a}
 function mDlg(){
   const ks=Object.keys(DN),chip=(w,k)=>`<button class="dc${(w==="me"?S.dispMe:S.dispOpp)===k?" on":""}" data-dm="${w}:${k}"><i style="background:${DC[k]}"></i>${DN[k]}</button>`;
   const mine=MISS[S.dispMe+"|"+S.dispOpp],theirs=MISS[S.dispOpp+"|"+S.dispMe],v=S.mview==="opp"?"opp":"me",both=!!(S.dispOpp&&mine&&theirs);
   const tabs=both?`<div class="dcs" style="margin-top:12px"><button class="dc${v==="me"?" on":""}" data-mt="me">Meine: ${esc(mine.n)}</button><button class="dc${v==="opp"?" on":""}" data-mt="opp">Gegner: ${esc(theirs.n)}</button></div>`:"";
   const key=both&&v==="opp"?S.dispOpp+"|"+S.dispMe:S.dispMe+"|"+S.dispOpp;
-  $("dmb").innerHTML=`<div class="sub" style="margin-top:0">Meine Force Disposition</div><div class="dcs">${ks.map(k=>chip("me",k)).join("")}</div><div class="sub">Gegner</div><div class="dcs">${ks.map(k=>chip("opp",k)).join("")}</div>`+tabs+(both&&v==="opp"?`<p class="hint">So punktet dein Gegner. Daran siehst du, was du verhindern kannst.</p>`:"")+mCard(key)}
+  const tp=typeof TIPS!=="undefined"?TIPS[S.dispMe+"|"+S.dispOpp]:null,isOpp=both&&v==="opp",ul=a=>`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  const tipHtml=tp?(isOpp?`<details class="tp" open><summary>Worauf du achten musst</summary>${ul(tp.w)}</details>`:`<details class="tp"><summary>Taktik-Tipps</summary>${ul(tp.p)}</details>`)+`<p class="hint">Auszug aus dem Matchup-Guide von Night Geist Gaming.</p>`:"";
+  $("dmb").innerHTML=`<div class="sub" style="margin-top:0">Meine Force Disposition</div><div class="dcs">${ks.map(k=>chip("me",k)).join("")}</div><div class="sub">Gegner</div><div class="dcs">${ks.map(k=>chip("opp",k)).join("")}</div>`+tabs+(both&&v==="opp"?`<p class="hint">So punktet dein Gegner. Daran siehst du, was du verhindern kannst.</p>`:"")+(tp&&!isOpp?`<div class="key">${esc(tp.k)}</div>`:"")+mCard(key)+tipHtml}
 function setDisp(v){const [w,k]=v.split(":");if(w==="me")S.dispMe=k;else S.dispOpp=k;Object.keys(S.done).forEach(x=>{if(String(x)[0]==="m")delete S.done[x]});MC.k="";render();mDlg()}
 function cd(i,pas){return (S.view==="compact"||(S.view==="units"&&isWide()))?cardC(i,pas,false):card(i,pas)}
 function wParse(w){const m=w.name.match(/^(?:➤\s*)?(.*?)\s*-\s+(.+)$/);return m?{base:m[1].trim(),mode:m[2].trim()}:{base:w.name.replace(/^➤\s*/,""),mode:""}}
@@ -372,7 +381,7 @@ function importFile(f){
   if(!f)return;const r=new FileReader();
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.ITEMS)||!Array.isArray(d.UNITS)||!d.ITEMS.length)throw new Error("Unbekanntes Format");
     try{localStorage.setItem(DKEY,JSON.stringify(d))}catch(e){throw new Error("Speichern nicht möglich")}
-    ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};MISS=d.MISS||{};MC.k="";GN=null;render();dinfo();}catch(e){alert("Import fehlgeschlagen: "+e.message)}};
+    ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};MISS=d.MISS||{};TIPS=d.TIPS||{};MC.k="";GN=null;render();dinfo();}catch(e){alert("Import fehlgeschlagen: "+e.message)}};
   r.onerror=()=>alert("Datei konnte nicht gelesen werden");r.readAsText(f)}
 function dinfo(){$("dinfo").textContent=ITEMS.length?`Geladen: ${ITEMS.length} Regeln, ${UNITS.length} Einheitengruppen, ${Object.keys(GLOSS).length} Glossar-Einträge, ${Object.keys(MISS).length} Missionen.`:"Keine Daten geladen."}
 document.addEventListener("change",e=>{const x=e.target;if(x&&(x.id==="imp"||x.id==="imp2")){importFile(x.files&&x.files[0]);try{x.value=""}catch(_){}}});
@@ -382,7 +391,7 @@ $("msn").onclick=()=>{mDlg();$("dm").showModal()};
 $("dmc").onclick=()=>$("dm").close();
 $("dcl").onclick=()=>$("dd").close();
 $("dres").onclick=()=>{if(confirm("Runde, CP, Haken und eigene Einträge zurücksetzen?")){S={view:S.view,uo:null,dispMe:S.dispMe,dispOpp:"",round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};$("dd").close();render()}};
-$("ddel").onclick=()=>{if(confirm("Regeldaten von diesem Gerät löschen?")){try{localStorage.removeItem(DKEY)}catch(e){}ITEMS=[];UNITS=[];GLOSS={};MISS={};MC.k="";GN=null;$("dd").close();render()}};
+$("ddel").onclick=()=>{if(confirm("Regeldaten von diesem Gerät löschen?")){try{localStorage.removeItem(DKEY)}catch(e){}ITEMS=[];UNITS=[];GLOSS={};MISS={};TIPS={};MC.k="";GN=null;$("dd").close();render()}};
 let rz;if(window.addEventListener)window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(render,120)});
 render();
 </script>
