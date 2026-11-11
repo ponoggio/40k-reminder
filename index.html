@@ -11,9 +11,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
 <style>
-:root{--bg:#e8ebe4;--sf:#fff;--sf2:#dde2d8;--tx:#1c2327;--mu:#59645c;--ac:#c4521e;--ok:#4d7a2e;--ln:#c8cfc3;--st:#2f6aa3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b2124;--sf:#263035;--sf2:#2f3b41;--tx:#e7eae4;--mu:#9aa79f;--ac:#e07a43;--ok:#8fb86a;--ln:#3a474e;--st:#3f7fc0;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1b2124;--sf:#263035;--sf2:#2f3b41;--tx:#e7eae4;--mu:#9aa79f;--ac:#e07a43;--ok:#8fb86a;--ln:#3a474e;--st:#3f7fc0;color-scheme:dark}
+:root{--bg:#e8ebe4;--sf:#fff;--sf2:#dde2d8;--tx:#1c2327;--mu:#59645c;--ac:#c4521e;--ok:#4d7a2e;--ln:#c8cfc3;--st:#2f6aa3;--mi:#8a6200;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b2124;--sf:#263035;--sf2:#2f3b41;--tx:#e7eae4;--mu:#9aa79f;--ac:#e07a43;--ok:#8fb86a;--ln:#3a474e;--st:#3f7fc0;--mi:#a87a14;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1b2124;--sf:#263035;--sf2:#2f3b41;--tx:#e7eae4;--mu:#9aa79f;--ac:#e07a43;--ok:#8fb86a;--ln:#3a474e;--st:#3f7fc0;--mi:#a87a14;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 Barlow,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -101,6 +101,19 @@ input,select,textarea{width:100%;font:inherit;padding:9px;border-radius:8px;bord
 #dg{padding:0}.dgi{padding:16px}
 #dg h3{margin:0 0 4px;font:700 24px 'Barlow Condensed',sans-serif}
 #dg .txt{font-size:16px;max-height:55vh;overflow-y:auto}
+.kind.m{background:var(--mi);border-color:var(--mi);color:#fff}
+.card.mi{border-left-color:var(--mi)}
+#msn{max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dm{width:min(94vw,560px);padding:0}
+#dmb{max-height:66vh;overflow-y:auto}
+#dmb h3{margin:14px 0 4px;font:700 24px 'Barlow Condensed',sans-serif}
+.dcs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.dc{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--ln);background:var(--sf2);font-weight:600;font-size:14px}
+.dc i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.dc.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.mr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 0;border-top:1px solid var(--ln)}
+.mw{grid-column:1/-1;font-size:12.5px;color:var(--mu)}
+.mt{font-size:15px}.mv{font:700 21px 'Barlow Condensed',sans-serif;color:var(--mi);align-self:center}
 .pl{min-width:0}
 @media (min-width:700px){
 main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
@@ -116,6 +129,7 @@ main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
   <div class="grp"><button id="cm" aria-label="CP minus">−</button><b id="cv"></b><small>CP</small><button id="cp" aria-label="CP plus">+</button></div>
   <button class="tg" id="rl" aria-pressed="false">Riled up</button>
   <div class="sp"></div>
+  <button class="tg" id="msn">Mission</button>
   <button class="tg" id="gear" aria-label="Regeldaten">⚙</button>
   <select class="vw" id="vw" aria-label="Ansicht"><option value="detail">Detailliert</option><option value="compact">Kompakt</option><option value="units">Einheiten</option></select>
   <button class="tg" id="tn" aria-pressed="false"></button>
@@ -125,6 +139,7 @@ main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
 <main id="main"></main>
 <div class="fab"><button class="btn" id="add">+ Eigene</button><button class="btn p" id="nx"></button></div>
 <dialog id="dg"><div class="dgi"><h3 id="dgt"></h3><div class="hint" id="dgp"></div><div class="txt" id="dgd"></div></div></dialog>
+<dialog id="dm"><div class="dgi"><div id="dmb"></div><div class="row"><button class="btn p" id="dmc">Fertig</button></div></div></dialog>
 <dialog id="dd"><h3 style="margin:0 0 8px;font:700 22px 'Barlow Condensed',sans-serif">Regeldaten</h3>
  <p id="dinfo" class="hint"></p>
  <label class="btn" for="imp2" style="display:block;text-align:center;margin:0">Datei importieren</label><input type="file" id="imp2" accept=".json,application/json" hidden>
@@ -140,12 +155,12 @@ main{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
  <div class="row"><button class="btn" value="x">Abbrechen</button><button class="btn p" id="fs" value="ok">Speichern</button></div>
 </form></dialog>
 <script>
-const EMBED=false;let ITEMS=[],UNITS=[],GLOSS={};
+const EMBED=false;let ITEMS=[],UNITS=[],GLOSS={},MISS={};
 const DKEY='ork40k-data-v1';
-(function(){try{const r=localStorage.getItem(DKEY);if(r){const d=JSON.parse(r);if(Array.isArray(d.ITEMS)&&Array.isArray(d.UNITS)){ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{}}}}catch(e){}})();
-const PH=[["round","Rundenbeginn"],["command","Command"],["movement","Movement"],["shooting","Shooting"],["charge","Charge"],["fight","Fight"],["passive","Passiv"]];
+(function(){try{const r=localStorage.getItem(DKEY);if(r){const d=JSON.parse(r);if(Array.isArray(d.ITEMS)&&Array.isArray(d.UNITS)){ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};MISS=d.MISS||{}}}}catch(e){}})();
+const PH=[["round","Rundenbeginn"],["command","Command"],["movement","Movement"],["shooting","Shooting"],["charge","Charge"],["fight","Fight"],["end","Zugende"],["passive","Passiv"]];
 const KEY="ork40k-v1";
-let S={view:"detail",uo:null,round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};
+let S={view:"detail",uo:null,dispMe:"purge",dispOpp:"",mview:"me",round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};
 try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const $=id=>document.getElementById(id);
@@ -166,10 +181,11 @@ function showGloss(term){
   $("dgp").textContent=(clean.toLowerCase()!==e.n.toLowerCase()?"Hier: "+clean+" · ":"")+(e.p?"Regelbuch S. "+e.p:"Regelbuch");
   $("dgd").innerHTML=fmt(e.d).replace(/\*/g,"");
   $("dg").showModal()}
-const all=()=>ITEMS.concat(S.custom);
+const all=()=>ITEMS.concat(mi(),S.custom);
 function phOf(i){const p=i.phases;return p&&p.length?p:["passive"]}
 function inPhase(i,ph){
   const p=phOf(i);
+  if(i.r&&(S.round<i.r[0]||S.round>i.r[1]))return false;
   if(ph==="passive")return p[0]==="passive";
   if(!p.includes(ph))return false;
   if(ph==="round")return true;
@@ -180,8 +196,8 @@ function card(i,pas){
   const d=!!S.done[i.id],ex=!!S.open[i.id],s=i.kind==="stratagem";
   const rl=S.riled&&i.riled?" riled":"";
   const once=i.once==="battle"?"einmal pro Spiel":i.once==="round"?"einmal pro Runde":i.once==="phase"?"einmal pro Phase":"";
-  const kd=`<span class="kind${s?" s":""}">${s?"Stratagem"+(i.cp!==""&&i.cp!=null?" · "+i.cp+" CP":""):"Ability"}</span>`;
-  return `<article class="card${s?" s":""}${d?" done":""}${rl}${pas?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body"><h3>${gt(i.name)}</h3><div class="meta">${kd}${esc(i.unit)}${s&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once?` · <em>${once}</em>`:""}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div>${i.text?`<div class="txt${ex?"":" cl"}" data-a="o">${fmt(i.text)}</div>${!ex&&i.text.length>150?`<div class="more" data-a="o">mehr</div>`:""}`:""}</div></article>`}
+  const kd=kindChip(i);
+  return `<article class="card${kc(i)}${d?" done":""}${rl}${pas?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body"><h3>${gt(i.name)}</h3><div class="meta">${kd}${esc(i.unit)}${s&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once?` · <em>${once}</em>`:""}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div>${i.text?`<div class="txt${ex?"":" cl"}" data-a="o">${fmt(i.text)}</div>${!ex&&i.text.length>150?`<div class="more" data-a="o">mehr</div>`:""}`:""}</div></article>`}
 const PL=Object.fromEntries(PH);
 function turnTxt(i){const o=(i.oppMap&&S.phase in i.oppMap)?i.oppMap[S.phase]:i.opp;return o===true?"Gegnerzug":o==="both"?"beide Züge":"Mein Zug"}
 function phTxt(i){const p=phOf(i);if(p[0]==="passive")return "Passiv";return p.map(x=>PL[x]).join("/")+(i.opp===true?" · Gegnerzug":(i.opp==="both"||i.oppMap)?" · auch Gegnerzug":"")}
@@ -189,11 +205,50 @@ function cardC(i,pas,inUnit){
   const d=!!S.done[i.id],ex=!!S.open[i.id],s=i.kind==="stratagem",pv=phOf(i)[0]==="passive";
   const now=inUnit&&!pv&&inPhase(i,S.phase)?" now":"";
   const rl=S.riled&&i.riled?" riled":"";
-  const kd=`<span class="kind${s?" s":""}">${s?"Stratagem"+(i.cp!==""&&i.cp!=null?" · "+i.cp+" CP":""):"Ability"}</span>`;
+  const kd=kindChip(i);
   const once=i.once==="battle"?" · <em>1×/Spiel</em>":i.once==="round"?" · <em>1×/Runde</em>":"";
   const sh=i.short||(i.text||"").replace(/\*/g,"").slice(0,70);
-  return `<article class="card cm${s?" s":""}${d?" done":""}${rl}${now}${pv?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body" data-a="o"><h3>${gt(i.name)}</h3><div class="meta">${kd}${inUnit?esc(phTxt(i)):esc(i.unit)}${s&&!inUnit&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div><div class="sh">${esc(sh)}</div>${ex&&i.text?`<div class="txt">${fmt(i.text)}</div>`:""}</div></article>`}
+  return `<article class="card cm${kc(i)}${d?" done":""}${rl}${now}${pv?" passive":""}" data-id="${i.id}"><div class="chk" data-a="t">✓</div><div class="body" data-a="o"><h3>${gt(i.name)}</h3><div class="meta">${kd}${inUnit?esc(phTxt(i)):esc(i.unit)}${s&&!inUnit&&S.phase!=="passive"?` · <em>${turnTxt(i)}</em>`:""}${once}${i.custom?` <button class="x" data-a="del">Löschen</button>`:""}</div><div class="sh">${esc(sh)}</div>${ex&&i.text?`<div class="txt">${fmt(i.text)}</div>`:""}</div></article>`}
 function isWide(){return window.innerWidth>=700}
+let MC={k:"",v:[]};
+const DN={take:"Take and Hold",disr:"Disruption",purge:"Purge the Foe",prio:"Priority Assets",recon:"Reconnaissance"};
+const DC={take:"#2f8a3a",disr:"#2a6fb0",purge:"#b3261e",prio:"#b58a2a",recon:"#1f8a78"};
+function mi(){const k=S.dispMe+"|"+S.dispOpp;if(MC.k!==k){MC={k,v:buildMission(k)}}return MC.v}
+function buildMission(k){
+  const m=typeof MISS!=="undefined"&&MISS[k];if(!m)return[];const out=[];let n=0;
+  const add=(r,ph,rr,opp,sx)=>out.push({id:"m"+(n++),name:r.t+(sx||""),unit:"Mission: "+m.n,text:r.x,short:r.s||"",kind:"mission",vp:r.vp,f:r.f,phases:[ph],opp,once:"p",r:rr,riled:false});
+  m.rows.forEach(r=>{const a=r.r[0],b=r.r[1];
+    if(r.w==="e")add(r,"end",r.r,false);
+    else if(r.w==="c")add(r,"command",r.r,false);
+    else if(r.w==="c5"){const hi=Math.min(b,4);if(a<=hi)add(r,"command",[a,hi],false);if(b>=5)add(r,"end",[5,5],false," (Zugende, Runde 5)")}
+    else if(r.w==="eb")add(r,"end",[5,5],"both"," (Ende der Schlacht)");
+    else if(r.w==="ea")add(r,"end",r.r,"both");
+    else if(r.w==="ts")add(r,"command",r.r,false," (Zugbeginn)");
+    else if(r.w==="sb")add(r,"round",r.r,false);
+    else if(r.w==="m")add(r,"movement",r.r,false)});
+  if(m.act)add({t:"Aktion: "+m.act.n,x:m.act.x,vp:"",f:"act",s:m.act.s},"shooting",m.act.r,false);
+  return out}
+function kindChip(i){
+  if(i.kind==="stratagem")return `<span class="kind s">Stratagem${i.cp!==""&&i.cp!=null?" · "+i.cp+" CP":""}</span>`;
+  if(i.kind==="mission"){if(i.f==="act")return `<span class="kind m">Mission · Aktion</span>`;const v=String(i.vp||"");return `<span class="kind m">Mission${v?" · "+(v[0]==="+"?v+" VP zusätzlich":v+" VP"):""}${i.f==="or"?" · oder":""}</span>`}
+  return `<span class="kind">Ability</span>`}
+function kc(i){return i.kind==="stratagem"?" s":i.kind==="mission"?" mi":""}
+const RL=r=>r[0]===1&&r[1]===5?"Jede Runde":r[0]===r[1]?"Runde "+r[0]:r[1]===5?"ab Runde "+r[0]:"Runde "+r[0]+"–"+r[1];
+const WL={m:"Wenn deine Einheit eine Bewegung beendet",e:"Ende deines Zuges",c:"Ende deiner Command phase",c5:"Ende deiner Command phase (Runde 5: Zugende)",eb:"Ende der Schlacht",ea:"Ende eines Zuges",ts:"Beginn deines Zuges",sb:"Beginn der Schlacht"};
+function mCard(key){
+  if(!S.dispOpp)return `<p class="hint">Wähle die Disposition deines Gegners.</p>`;
+  const m=MISS[key];
+  if(!m)return `<p class="hint">Für diese Paarung ist keine Mission hinterlegt.</p>`;
+  const rows=m.rows.map(r=>{const v=String(r.vp||"");return `<div class="mr"><div class="mw">${RL(r.r)} · ${WL[r.w]}</div><div class="mt">${r.f==="or"?"<b>ODER</b> ":""}${r.f==="plus"?"<b>+</b> ":""}${esc(r.x)}</div>${v?`<div class="mv">${esc(v)} VP</div>`:""}</div>`}).join("");
+  const a=m.act?`<div class="sub">Aktion: ${esc(m.act.n)}</div><div class="mt">${esc(m.act.x).replace(/\n/g,"<br>")}</div>`+(m.act.r[0]>1?`<p class="hint">Möglich ab Runde ${m.act.r[0]}.</p>`:""):"";
+  return `<h3>${esc(m.n)}</h3>`+rows+a}
+function mDlg(){
+  const ks=Object.keys(DN),chip=(w,k)=>`<button class="dc${(w==="me"?S.dispMe:S.dispOpp)===k?" on":""}" data-dm="${w}:${k}"><i style="background:${DC[k]}"></i>${DN[k]}</button>`;
+  const mine=MISS[S.dispMe+"|"+S.dispOpp],theirs=MISS[S.dispOpp+"|"+S.dispMe],v=S.mview==="opp"?"opp":"me",both=!!(S.dispOpp&&mine&&theirs);
+  const tabs=both?`<div class="dcs" style="margin-top:12px"><button class="dc${v==="me"?" on":""}" data-mt="me">Meine: ${esc(mine.n)}</button><button class="dc${v==="opp"?" on":""}" data-mt="opp">Gegner: ${esc(theirs.n)}</button></div>`:"";
+  const key=both&&v==="opp"?S.dispOpp+"|"+S.dispMe:S.dispMe+"|"+S.dispOpp;
+  $("dmb").innerHTML=`<div class="sub" style="margin-top:0">Meine Force Disposition</div><div class="dcs">${ks.map(k=>chip("me",k)).join("")}</div><div class="sub">Gegner</div><div class="dcs">${ks.map(k=>chip("opp",k)).join("")}</div>`+tabs+(both&&v==="opp"?`<p class="hint">So punktet dein Gegner. Daran siehst du, was du verhindern kannst.</p>`:"")+mCard(key)}
+function setDisp(v){const [w,k]=v.split(":");if(w==="me")S.dispMe=k;else S.dispOpp=k;Object.keys(S.done).forEach(x=>{if(String(x)[0]==="m")delete S.done[x]});MC.k="";render();mDlg()}
 function cd(i,pas){return (S.view==="compact"||(S.view==="units"&&isWide()))?cardC(i,pas,false):card(i,pas)}
 function wParse(w){const m=w.name.match(/^(?:➤\s*)?(.*?)\s*-\s+(.+)$/);return m?{base:m[1].trim(),mode:m[2].trim()}:{base:w.name.replace(/^➤\s*/,""),mode:""}}
 function wStats(w){
@@ -233,6 +288,7 @@ function render(){
   $("rl").setAttribute("aria-pressed",S.riled);
   $("tn").setAttribute("aria-pressed",S.opp);$("tn").textContent=S.opp?"Gegnerzug":"Mein Zug";
   $("nx").textContent=nextLabel();
+  {const m=typeof MISS!=="undefined"&&MISS[S.dispMe+"|"+S.dispOpp];$("msn").textContent=m?m.n:"Mission";$("msn").setAttribute("aria-pressed",!m)}
   const tb=$("tabs"),keep=tb.scrollLeft||0;tb.innerHTML=PH.map(([k,l])=>{const n=all().filter(i=>inPhase(i,k)&&!S.done[i.id]&&k!=="passive").length;return `<button class="tab" role="tab" data-p="${k}" aria-selected="${S.phase===k}">${l}${n?`<i>${n}</i>`:""}</button>`}).join("");
   try{tb.scrollLeft=keep;const sel=tb.querySelector('[aria-selected="true"]');if(sel){const tr=tb.getBoundingClientRect(),sr=sel.getBoundingClientRect();const to=Math.max(0,Math.min(tb.scrollWidth-tb.clientWidth,sr.left-tr.left+tb.scrollLeft-(tb.clientWidth-sr.width)/2));tb.scrollTo({left:to,behavior:"smooth"})}}catch(e){}
   try{document.documentElement.style.setProperty("--hh",document.querySelector("header").offsetHeight+"px")}catch(e){}
@@ -250,16 +306,18 @@ function phaseHtml(){
   const list=all().filter(i=>inPhase(i,S.phase));
   list.sort((a,b)=>(!!S.done[a.id])-(!!S.done[b.id]));
   const pas=S.phase==="passive";
-  let h=pas?`<p class="hint">Immer aktiv, kein Abhaken nötig.</p>`:(S.opp&&S.phase!=="round"?`<p class="hint">Gegnerzug: nur Dinge, die du jetzt im Zug des Gegners machen kannst.</p>`:"");
+  const need=S.phase==="round"&&!S.dispOpp&&Object.keys(MISS).length?`<p class="hint">Mission: Über „Mission“ oben die Disposition des Gegners wählen.</p>`:"";
+  let h=need+(pas?`<p class="hint">Immer aktiv, kein Abhaken nötig.</p>`:(S.opp&&S.phase!=="round"?`<p class="hint">Gegnerzug: nur Dinge, die du jetzt im Zug des Gegners machen kannst.</p>`:""));
   if(pas){h+=list.map(i=>cd(i,true)).join("");if(!list.length)h+=`<p class="hint">Hier gibt es nichts zu beachten.</p>`}
   else{
-    const st=list.filter(i=>i.kind==="stratagem"),ab=list.filter(i=>i.kind!=="stratagem");
+    const st=list.filter(i=>i.kind==="stratagem"),ab=list.filter(i=>i.kind!=="stratagem"&&i.kind!=="mission"),ms=list.filter(i=>i.kind==="mission");
+    if(ms.length)h+=`<div class="sec">Mission</div>`+ms.map(i=>cd(i,false)).join("");
     h+=`<div class="sec">Stratagems</div>`+(st.length?st.map(i=>cd(i,false)).join(""):`<p class="hint">Noch keine hinterlegt. Mit „+ Eigene“ anlegen.</p>`);
     h+=`<div class="sec">Abilities</div>`+(ab.length?ab.map(i=>cd(i,false)).join(""):`<p class="hint">Nichts in dieser Phase.</p>`);
   }
   return h;
 }
-function seq(){const a=[["round",false]];["command","movement","shooting","charge","fight"].forEach(p=>a.push([p,false]));["command","movement","shooting","charge","fight"].forEach(p=>a.push([p,true]));return a}
+function seq(){const a=[["round",false]],P=["command","movement","shooting","charge","fight","end"];P.forEach(p=>a.push([p,false]));P.forEach(p=>a.push([p,true]));return a}
 function pos(){const s=seq();let i=s.findIndex(([p,o])=>p===S.phase&&(p==="round"||o===S.opp));return i<0?0:i}
 function nextLabel(){const s=seq(),i=pos();if(i===s.length-1)return "Nächste Runde ▶";const [p,o]=s[i+1];const l=PH.find(x=>x[0]===p)[1];return (o&&!s[i][1]?"Gegner: ":"")+l+" ▶"}
 function clearScope(sc){all().forEach(i=>{if(sc.includes(i.once||"turn"))delete S.done[i.id]})}
@@ -270,8 +328,10 @@ function next(){
   window.scrollTo(0,0);render();
 }
 document.addEventListener("click",e=>{
-  if(e.target===$("dg")){$("dg").close();return}
-  const t=e.target.closest("[data-g],[data-u],[data-p],[data-a],button");if(!t)return;
+  for(const d of["dg","dm"]){if(e.target===$(d)){$(d).close();return}}
+  const t=e.target.closest("[data-mt],[data-dm],[data-g],[data-u],[data-p],[data-a],button");if(!t)return;
+  if(t.dataset.mt){S.mview=t.dataset.mt;mDlg();save();return}
+  if(t.dataset.dm){setDisp(t.dataset.dm);return}
   if(t.dataset.g!==undefined){showGloss(t.dataset.g);return}
   if(t.dataset.u){S.uo=S.uo===t.dataset.u?null:t.dataset.u;render();return}
   if(t.dataset.p){S.phase=t.dataset.p;if(S.phase==="round"||S.phase==="passive"){}render();return}
@@ -312,15 +372,17 @@ function importFile(f){
   if(!f)return;const r=new FileReader();
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.ITEMS)||!Array.isArray(d.UNITS)||!d.ITEMS.length)throw new Error("Unbekanntes Format");
     try{localStorage.setItem(DKEY,JSON.stringify(d))}catch(e){throw new Error("Speichern nicht möglich")}
-    ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};GN=null;render();dinfo();}catch(e){alert("Import fehlgeschlagen: "+e.message)}};
+    ITEMS=d.ITEMS;UNITS=d.UNITS;GLOSS=d.GLOSS||{};MISS=d.MISS||{};MC.k="";GN=null;render();dinfo();}catch(e){alert("Import fehlgeschlagen: "+e.message)}};
   r.onerror=()=>alert("Datei konnte nicht gelesen werden");r.readAsText(f)}
-function dinfo(){$("dinfo").textContent=ITEMS.length?`Geladen: ${ITEMS.length} Regeln, ${UNITS.length} Einheitengruppen, ${Object.keys(GLOSS).length} Glossar-Einträge.`:"Keine Daten geladen."}
+function dinfo(){$("dinfo").textContent=ITEMS.length?`Geladen: ${ITEMS.length} Regeln, ${UNITS.length} Einheitengruppen, ${Object.keys(GLOSS).length} Glossar-Einträge, ${Object.keys(MISS).length} Missionen.`:"Keine Daten geladen."}
 document.addEventListener("change",e=>{const x=e.target;if(x&&(x.id==="imp"||x.id==="imp2")){importFile(x.files&&x.files[0]);try{x.value=""}catch(_){}}});
 $("gear").hidden=EMBED;
 $("gear").onclick=()=>{dinfo();$("dd").showModal()};
+$("msn").onclick=()=>{mDlg();$("dm").showModal()};
+$("dmc").onclick=()=>$("dm").close();
 $("dcl").onclick=()=>$("dd").close();
-$("dres").onclick=()=>{if(confirm("Runde, CP, Haken und eigene Einträge zurücksetzen?")){S={view:S.view,uo:null,round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};$("dd").close();render()}};
-$("ddel").onclick=()=>{if(confirm("Regeldaten von diesem Gerät löschen?")){try{localStorage.removeItem(DKEY)}catch(e){}ITEMS=[];UNITS=[];GLOSS={};GN=null;$("dd").close();render()}};
+$("dres").onclick=()=>{if(confirm("Runde, CP, Haken und eigene Einträge zurücksetzen?")){S={view:S.view,uo:null,dispMe:S.dispMe,dispOpp:"",round:1,cp:0,riled:false,opp:false,phase:"round",done:{},open:{},custom:[]};$("dd").close();render()}};
+$("ddel").onclick=()=>{if(confirm("Regeldaten von diesem Gerät löschen?")){try{localStorage.removeItem(DKEY)}catch(e){}ITEMS=[];UNITS=[];GLOSS={};MISS={};MC.k="";GN=null;$("dd").close();render()}};
 let rz;if(window.addEventListener)window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(render,120)});
 render();
 </script>
